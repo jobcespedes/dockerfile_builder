@@ -5,10 +5,6 @@ dockerfile_builder_dest: build/
 # Image name (Ex. "repository/name:tag" )
 dockerfile_builder_image: false
 
-# Image configuration directory. Could be use to store files to be copied
-# when building image
-dockerfile_builder_image_conf: "{{ dockerfile_builder_image }}/conf"
-
 # Dest directory for image conf and Dockerfile
 dockerfile_builder_image_dest:
   "{{ dockerfile_builder_dest + '/' + dockerfile_builder_image }}"

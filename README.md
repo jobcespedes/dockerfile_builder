@@ -22,7 +22,7 @@ Dependencies
 
 Example Playbook
 ----------------
-Create a folder structure for your container(s). There should be at least a Dockerfile.j2 template there. The role will also copy a conf directory if present. The following is an example for multiple containers:
+Create a folder structure for your container(s). There should be at least a Dockerfile.j2 template there. The following is an example for multiple containers:
 ```bash
 ├── example.com
 │   ├── mycontainer

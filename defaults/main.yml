@@ -2,10 +2,11 @@
 # Dest directory for images conf and Dockerfiles
 dockerfile_builder_dest: build/
 
-# Image name (Ex. "repository/name:tag" )
+# Image name (Ex. "repository/name:tag". It is also the path to
+# its context
 dockerfile_builder_image: false
 
-# Dest directory for image conf and Dockerfile
+# Dest directory for image context
 dockerfile_builder_image_dest:
   "{{ dockerfile_builder_dest + '/' + dockerfile_builder_image }}"
 

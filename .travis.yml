@@ -1,0 +1,22 @@
+---
+language: python
+services:
+  - docker
+
+env:
+  global:
+    - ROLE_NAME: dockerfile_builder
+    - GALAXY_ROLE_NAME: >-
+        jobcespedes.dockerfile_builder
+  matrix:
+    - MOLECULE_DISTRO: centos7
+    - MOLECULE_DISTRO: ubuntu1804
+    - MOLECULE_DISTRO: ubuntu1604
+    - MOLECULE_DISTRO: debian9
+
+before_install: "./test/scripts/before-install.sh"
+install: "./test/scripts/install.sh"
+script: "./test/scripts/test-role.sh"
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

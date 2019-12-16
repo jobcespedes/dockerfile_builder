@@ -1,0 +1,48 @@
+---
+- block:
+    - name: Log into registry
+      when: dockerfile_builder_login | default(false)
+      register: dockerfile_builder_login_state
+      docker_login:
+        username: "{{ dockerfile_builder_login.username }}"
+        password: "{{ dockerfile_builder_login.password }}"
+        reauthorize:
+          "{{ dockerfile_builder_login.reauthorize | default(omit) }}"
+        config_path:
+          "{{ dockerfile_builder_login.config_path | default(omit) }}"
+
+    - name: check image build directory
+      file:
+        dest: "{{ dockerfile_builder_image_dest }}"
+        state: directory
+
+    - name: copy conf directory
+      copy:
+        src: "{{ dockerfile_builder_image_conf }}"
+        dest: "{{ dockerfile_builder_image_dest }}"
+
+    - name: create Dockerfile
+      template:
+        src: "{{ dockerfile_builder_image_template_src }}"
+        dest: "{{ dockerfile_builder_image_template_dest }}"
+
+    - name: build image
+      docker_image:
+        name: "{{ dockerfile_builder_image }}"
+        build:
+          path: "{{ dockerfile_builder_image_dest }}"
+          pull: "{{ dockerfile_builder_image_pull | default(false) }}"
+          arg: "{{ dockerfile_builder_image_args | default(omit) }}"
+          dockerfile:
+            "{{ dockerfile_builder_image_dockerfile | default(omit) }}"
+        source: build
+        push: "{{ dockerfile_builder_image_push | default(omit) }}"
+        force_source:
+          "{{ dockerfile_builder_force_source | default(omit) }}"
+        debug: "{{ dockerfile_builder_debug | default(omit) }}"
+
+  always:
+    - name: Log out
+      when: dockerfile_builder_login_state is success
+      docker_login:
+        state: absent

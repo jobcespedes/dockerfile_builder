@@ -24,16 +24,22 @@
 
     - name: copy conf directory
       when: dockerfile_builder_image_conf_exists.stat.exists
+      register: copy_conf
       copy:
         src: "{{ dockerfile_builder_image_conf }}"
         dest: "{{ dockerfile_builder_image_dest }}"
 
     - name: create Dockerfile
+      register: create_dockerfile
       template:
         src: "{{ dockerfile_builder_image_template_src }}"
         dest: "{{ dockerfile_builder_image_template_dest }}"
 
     - name: build image
+      when:
+        copy_conf is changed or
+        create_dockerfile is changed or
+        dockerfile_builder_force_source | default(false)
       docker_image:
         name: "{{ dockerfile_builder_image }}"
         build:
@@ -45,7 +51,7 @@
         source: build
         push: "{{ dockerfile_builder_image_push | default(omit) }}"
         force_source:
-          "{{ dockerfile_builder_force_source | default(omit) }}"
+          "{{ dockerfile_builder_force_source | default(false) }}"
         debug: "{{ dockerfile_builder_debug | default(omit) }}"
 
   always:

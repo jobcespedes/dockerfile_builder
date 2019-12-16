@@ -3,7 +3,7 @@
 dockerfile_builder_dest: build/
 
 # Image name (Ex. "repository/name:tag" )
-dockerfile_builder_image: "example.com/mycontainer"
+dockerfile_builder_image: false
 
 # Image configuration directory. Could be use to store files to be copied
 # when building image
@@ -15,7 +15,7 @@ dockerfile_builder_image_dest:
 
 # Source template for image Dockerfile
 dockerfile_builder_image_template_src: >-
-  "{{ role_path + '/files/' + dockerfile_builder_image +
+  "{{ dockerfile_builder_image +
   '/' + item.dockerfile_j2 | default('Dockerfile.j2') }}"
 
 # Dest template for image Dockerfile

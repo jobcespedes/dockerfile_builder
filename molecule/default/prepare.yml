@@ -1,0 +1,8 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: copy demo folder
+      copy:
+        src: example.com
+        dest: ./

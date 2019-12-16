@@ -1,5 +1,6 @@
 ---
-- block:
+- when: dockerfile_builder_image is defined and dockerfile_builder_image
+  block:
     - name: Log into registry
       when: dockerfile_builder_login | default(false)
       register: dockerfile_builder_login_state
@@ -16,7 +17,13 @@
         dest: "{{ dockerfile_builder_image_dest }}"
         state: directory
 
+    - name: check if image conf directory exists
+      stat:
+        path: "{{ dockerfile_builder_image_conf }}"
+      register: dockerfile_builder_image_conf_exists
+
     - name: copy conf directory
+      when: dockerfile_builder_image_conf_exists.stat.exists
       copy:
         src: "{{ dockerfile_builder_image_conf }}"
         dest: "{{ dockerfile_builder_image_dest }}"
@@ -43,6 +50,6 @@
 
   always:
     - name: Log out
-      when: dockerfile_builder_login_state is success
+      when: dockerfile_builder_login_state is not skipped
       docker_login:
         state: absent

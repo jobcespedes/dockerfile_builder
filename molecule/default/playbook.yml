@@ -1,8 +1,23 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    mycontainers:
+      - "example.com/mycontainer"
+      - "example.com/mycontainer2"
   roles:
-    - role: >-
+    - name: test with defaults
+      role: >-
         {{ lookup('env','GALAXY_ROLE_NAME') |
         default( playbook_dir | dirname |
         dirname | basename, true ) }}
+  tasks:
+    - name: test with multiple builds
+      vars:
+        dockerfile_builder_image: "{{ item }}"
+      include_role:
+        name: >-
+          {{ lookup('env','GALAXY_ROLE_NAME') |
+          default( playbook_dir | dirname |
+          dirname | basename, true ) }}
+      loop: "{{ mycontainers }}"

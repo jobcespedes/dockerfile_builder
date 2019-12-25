@@ -23,6 +23,7 @@
       copy:
         src: "{{ dockerfile_builder_image }}/"
         dest: "{{ dockerfile_builder_image_dest }}/"
+        mode: preserve
 
     - name: create Dockerfile
       template:

@@ -15,20 +15,31 @@
           "{{ dockerfile_builder_login.config_path | default(omit) }}"
 
     - name: check builder directory
+      register: dockerfile_builder_check_dir
       file:
         dest: "{{ dockerfile_builder_dest }}"
         state: directory
 
     - name: copy image build directory
+      register: dockerfile_builder_copy_build
       copy:
         src: "{{ dockerfile_builder_image }}/"
         dest: "{{ dockerfile_builder_image_dest }}/"
         mode: preserve
 
     - name: create Dockerfile
+      register: dockerfile_builder_create_dockerfile
       template:
         src: "{{ dockerfile_builder_image_template_src }}"
         dest: "{{ dockerfile_builder_image_template_dest }}"
+
+    - name: force build
+      when:
+        dockerfile_builder_check_dir is changed or
+        dockerfile_builder_copy_build is changed or
+        dockerfile_builder_create_dockerfile is changed
+      set_fact:
+        dockerfile_builder_force_source: true
 
     - name: build image
       docker_image:
@@ -39,10 +50,16 @@
           arg: "{{ dockerfile_builder_image_args | default(omit) }}"
           dockerfile:
             "{{ dockerfile_builder_image_dockerfile | default(omit) }}"
+          nocache:
+            "{{ dockerfile_builder_nocache | default(false) }}"
         source: build
         push: "{{ dockerfile_builder_image_push | default(omit) }}"
         force_source:
           "{{ dockerfile_builder_force_source | default(false) }}"
+        force_tag:
+          "{{ dockerfile_builder_force_tag | default(false) }}"
+        force_absent:
+          "{{ dockerfile_builder_force_absent | default(false) }}"
         debug: "{{ dockerfile_builder_debug | default(omit) }}"
 
   always:

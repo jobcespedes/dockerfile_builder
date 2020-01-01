@@ -1,6 +1,9 @@
 ---
 - when: dockerfile_builder_image is defined and dockerfile_builder_image
   block:
+    - debug:
+        msg: "building: {{ dockerfile_builder_image }}"
+
     - name: Log into registry
       when: dockerfile_builder_login | default(false)
       register: dockerfile_builder_login_state

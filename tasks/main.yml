@@ -17,24 +17,26 @@
         config_path:
           "{{ dockerfile_builder_login.config_path | default(omit) }}"
 
-    - name: check builder directory
+    - name: check image build directory
       register: dockerfile_builder_check_dir
       file:
-        dest: "{{ dockerfile_builder_dest }}"
+        dest: "{{ dockerfile_builder_image_dest }}"
         state: directory
-
-    - name: copy image build directory
-      register: dockerfile_builder_copy_build
-      copy:
-        src: "{{ dockerfile_builder_image }}/"
-        dest: "{{ dockerfile_builder_image_dest }}/"
-        mode: preserve
 
     - name: create Dockerfile
       register: dockerfile_builder_create_dockerfile
       template:
         src: "{{ dockerfile_builder_image_template_src }}"
         dest: "{{ dockerfile_builder_image_template_dest }}"
+
+    - name: sync image build directory
+      register: dockerfile_builder_copy_build
+      synchronize:
+        src: "{{ dockerfile_builder_image }}/"
+        dest: "{{ dockerfile_builder_image_dest }}/"
+        rsync_opts:
+          - "--delete"
+          - "--exclude=Dockerfile*"
 
     - name: force build
       when:

@@ -8,6 +8,7 @@ Generate Dockerfiles and build image containers using Ansible
 Requirements
 ------------
 
+- rsync
 - See [`requirements.txt`](requirements.txt)
 
 Role Variables

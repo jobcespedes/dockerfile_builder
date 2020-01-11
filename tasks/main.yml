@@ -32,7 +32,7 @@
     - name: sync image build directory
       register: dockerfile_builder_copy_build
       synchronize:
-        src: "{{ dockerfile_builder_image }}/"
+        src: "{{ dockerfile_builder_image_src }}/"
         dest: "{{ dockerfile_builder_image_dest }}/"
         rsync_opts:
           - "--delete"
@@ -59,6 +59,7 @@
             "{{ dockerfile_builder_nocache | default(false) }}"
         source: build
         push: "{{ dockerfile_builder_image_push | default(omit) }}"
+        tag: "{{ dockerfile_builder_image_tag | default(omit) }}"
         force_source:
           "{{ dockerfile_builder_force_source | default(false) }}"
         force_tag:

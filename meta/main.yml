@@ -4,7 +4,7 @@ allow_duplicates: false
 galaxy_info:
   author: Job Céspedes Ortiz
   description: >-
-    Generate Dockerfiles and build containers
+    Generate Dockerfiles and build containers with Docker (default) or Podman
   license: MIT
   min_ansible_version: 2.8
   platforms:

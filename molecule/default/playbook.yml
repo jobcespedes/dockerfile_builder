@@ -3,18 +3,20 @@
   hosts: all
   vars:
     mycontainers:
-      - "example.com/mycontainer"
-      - "example.com/mycontainer2"
+      - image: example.com/mycontainer
+      - image: example.com/mycontainer2
   roles:
     - name: test with defaults
+      vars:
+        dockerfile_builder_image: example.com/mycontainer
       role: >-
         {{ lookup('env','GALAXY_ROLE_NAME') |
         default( playbook_dir | dirname |
         dirname | basename, true ) }}
   tasks:
-    - name: test with multiple builds
+    - name: test with multiple builds and defaults
       vars:
-        dockerfile_builder_image: "{{ item }}"
+        dockerfile_builder_image: "{{ item.image }}"
       include_role:
         name: >-
           {{ lookup('env','GALAXY_ROLE_NAME') |

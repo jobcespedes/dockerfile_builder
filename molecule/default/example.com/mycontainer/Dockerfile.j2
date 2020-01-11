@@ -1,3 +1,4 @@
 FROM alpine:latest
 
 COPY conf/myfile /tmp/myfile
+RUN apk update && apk add wget && rm -rf /var/cache/apk/*

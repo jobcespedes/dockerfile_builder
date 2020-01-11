@@ -4,36 +4,23 @@
     - debug:
         msg: "building: {{ dockerfile_builder_image }}"
 
-    - name: Log into registry
-      when: dockerfile_builder_login | default(false)
-      register: dockerfile_builder_login_state
-      docker_login:
-        username: "{{ dockerfile_builder_login.username }}"
-        password: "{{ dockerfile_builder_login.password }}"
-        email: "{{ dockerfile_builder_login.email | default(omit) }}"
-        registry: "{{ dockerfile_builder_login.registry | default(omit) }}"
-        reauthorize:
-          "{{ dockerfile_builder_login.reauthorize | default(omit) }}"
-        config_path:
-          "{{ dockerfile_builder_login.config_path | default(omit) }}"
-
     - name: check image build directory
       register: dockerfile_builder_check_dir
       file:
-        dest: "{{ dockerfile_builder_image_dest }}"
+        dest: "{{ dockerfile_builder_path }}"
         state: directory
 
     - name: create Dockerfile
       register: dockerfile_builder_create_dockerfile
       template:
-        src: "{{ dockerfile_builder_image_template_src }}"
-        dest: "{{ dockerfile_builder_image_template_dest }}"
+        src: "{{ dockerfile_builder_template_src }}"
+        dest: "{{ dockerfile_builder_template_dest }}"
 
     - name: sync image build directory
       register: dockerfile_builder_copy_build
       synchronize:
-        src: "{{ dockerfile_builder_image_src }}/"
-        dest: "{{ dockerfile_builder_image_dest }}/"
+        src: "{{ dockerfile_builder_src }}/"
+        dest: "{{ dockerfile_builder_path }}/"
         rsync_opts:
           - "--delete"
           - "--exclude=Dockerfile*"
@@ -46,32 +33,4 @@
       set_fact:
         dockerfile_builder_force_source: true
 
-    - name: build image
-      docker_image:
-        name: "{{ dockerfile_builder_image }}"
-        build:
-          path: "{{ dockerfile_builder_image_dest }}"
-          pull: "{{ dockerfile_builder_image_pull | default(false) }}"
-          arg: "{{ dockerfile_builder_image_args | default(omit) }}"
-          dockerfile:
-            "{{ dockerfile_builder_image_dockerfile | default(omit) }}"
-          nocache:
-            "{{ dockerfile_builder_nocache | default(false) }}"
-        source: build
-        push: "{{ dockerfile_builder_image_push | default(omit) }}"
-        tag: "{{ dockerfile_builder_image_tag | default(omit) }}"
-        force_source:
-          "{{ dockerfile_builder_force_source | default(false) }}"
-        force_tag:
-          "{{ dockerfile_builder_force_tag | default(false) }}"
-        force_absent:
-          "{{ dockerfile_builder_force_absent | default(false) }}"
-        debug: "{{ dockerfile_builder_debug | default(omit) }}"
-
-  always:
-    - name: Log out
-      when:
-        dockerfile_builder_login_state is changed
-      docker_login:
-        registry: "{{ dockerfile_builder_login.registry | default(omit) }}"
-        state: absent
+    - include_tasks: docker.yml

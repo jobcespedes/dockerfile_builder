@@ -1,0 +1,46 @@
+---
+- name: build with docker_image
+  when: dockerfile_builder == 'docker'
+  block:
+    - name: Log into registry
+      when: dockerfile_builder_password | default(false)
+      register: dockerfile_builder_login_state
+      docker_login:
+        username: "{{ dockerfile_builder_username }}"
+        password: "{{ dockerfile_builder_password }}"
+        email: "{{ dockerfile_builder_email | default(omit) }}"
+        registry: "{{ dockerfile_builder_registry | default(omit) }}"
+        reauthorize:
+          "{{ dockerfile_builder_reauthorize | default(omit) }}"
+        config_path:
+          "{{ dockerfile_builder_config_path | default(omit) }}"
+
+    - name: build image
+      docker_image:
+        name: "{{ dockerfile_builder_image }}"
+        build:
+          path: "{{ dockerfile_builder_path }}"
+          pull: "{{ dockerfile_builder_pull | default(false) }}"
+          arg: "{{ dockerfile_builder_args | default(omit) }}"
+          dockerfile:
+            "{{ dockerfile_builder_dockerfile | default(omit) }}"
+          nocache:
+            "{{ dockerfile_builder_nocache | default(false) }}"
+        source: build
+        push: "{{ dockerfile_builder_push | default(omit) }}"
+        tag: "{{ dockerfile_builder_tag | default(omit) }}"
+        force_source:
+          "{{ dockerfile_builder_force_source | default(false) }}"
+        force_tag:
+          "{{ dockerfile_builder_force_tag | default(false) }}"
+        force_absent:
+          "{{ dockerfile_builder_force_absent | default(false) }}"
+        debug: "{{ dockerfile_builder_debug | default(omit) }}"
+
+  always:
+    - name: Log out
+      when:
+        dockerfile_builder_login_state is changed
+      docker_login:
+        registry: "{{ dockerfile_builder_registry | default(omit) }}"
+        state: absent

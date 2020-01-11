@@ -7,7 +7,7 @@ driver:
 lint:
   name: yamllint
 platforms:
-  - name: instance
+  - name: instance-${MOLECULE_DISTRO:-centos7}
     image:
       quay.io/jobcespedes/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
     command: ${MOLECULE_DOCKER_COMMAND:-""}

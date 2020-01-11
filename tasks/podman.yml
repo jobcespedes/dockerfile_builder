@@ -1,0 +1,32 @@
+---
+- name: build with podman_image
+  when: dockerfile_builder == 'podman'
+  block:
+    - name: build image
+      podman_image:
+        auth_file: "{{ dockerfile_builder_auth_file | default(omit) }}"
+        build:
+          annotation: "{{ dockerfile_builder_annotation | default(omit) }}"
+          cache: "{{ dockerfile_builder_cache | default(omit) }}"
+          force_rm: "{{ dockerfile_builder_force_rm | default(omit) }}"
+          format: "{{ dockerfile_builder_format | default(omit) }}"
+          rm: "{{ dockerfile_builder_rm | default(omit) }}"
+        ca_cert_dir: "{{ dockerfile_builder_ca_cert_dir | default(omit) }}"
+        executable: "{{ dockerfile_builder_executable | default(omit) }}"
+        force: "{{ dockerfile_builder_force | default(omit) }}"
+        name: "{{ dockerfile_builder_image }}"
+        password: "{{ dockerfile_builder_password | default(omit) }}"
+        path: "{{ dockerfile_builder_path | default(omit) }}"
+        pull: "{{ dockerfile_builder_pull | default(omit) }}"
+        push: "{{ dockerfile_builder_push | default(omit) }}"
+        push_args:
+          compress: "{{ dockerfile_builder_compress | default(omit) }}"
+          dest: "{{ dockerfile_builder_path | default(omit) }}"
+          format: "{{ dockerfile_builder_format | default(omit) }}"
+          sign_by: "{{ dockerfile_builder_sign_by | default(omit) }}"
+          transport: "{{ dockerfile_builder_transport | default(omit) }}"
+        state: "{{ dockerfile_builder_state | default(omit) }}"
+        tag: "{{ dockerfile_builder_tag | default(omit) }}"
+        username: "{{ dockerfile_builder_username | default(omit) }}"
+        validate_certs:
+          "{{ dockerfile_builder_validate_certs | default(omit) }}"

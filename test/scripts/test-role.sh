@@ -6,4 +6,4 @@ set -e
 
 ansible-lint .
 yamllint -d "{extends: default, rules: {line-length: {level: warning}}}" .
-molecule test --all
+molecule test

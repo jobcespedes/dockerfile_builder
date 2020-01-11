@@ -1,35 +1,32 @@
 ---
-# Dest directory for images conf and Dockerfiles
-dockerfile_builder_dest: build/
+# Builder: docker or podman
+dockerfile_builder: docker
 
 # Image name (Ex. "repository/name:tag". It is also the path to
 # its context
 dockerfile_builder_image: false
 
 # Image source
-dockerfile_builder_image_src: "{{ dockerfile_builder_image }}"
+dockerfile_builder_src: "{{ dockerfile_builder_image }}"
 
 # Dest directory for image context
-dockerfile_builder_image_dest:
-  "{{ dockerfile_builder_dest + '/' + dockerfile_builder_image }}"
+dockerfile_builder_path:
+  "{{ 'build/' + dockerfile_builder_image }}"
 
 # Source template for image Dockerfile
-dockerfile_builder_image_template_src: >-
-  "{{ dockerfile_builder_image_src +
+dockerfile_builder_template_src: >-
+  "{{ dockerfile_builder_src +
   '/' + item.dockerfile_j2 | default('Dockerfile.j2') }}"
 
 # Dest template for image Dockerfile
-dockerfile_builder_image_template_dest: >-
-  {{ dockerfile_builder_image_dest + '/'
+dockerfile_builder_template_dest: >-
+  {{ dockerfile_builder_path + '/'
   + item.dockerfile_j2 | default('Dockerfile') }}
 
 # debug build
 dockerfile_builder_debug: false
 
 # login and push
-# dockerfile_builder_image_push: true
-# dockerfile_builder_login:
-#   username: myusername
-#   password: mypassword
-#   reauthorize: reauthorize
-#   config_path: "~/.docker/config.json"
+# dockerfile_builder_push: true
+# dockerfile_builder_username: myusername
+# dockerfile_builder_password: mypassword

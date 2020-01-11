@@ -1,0 +1,35 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Install python for Ansible
+      raw:
+        test -e /usr/bin/python ||
+        (apt -y update && apt install -y python-minimal)
+      become: true
+      changed_when: false
+
+    - name: requirements
+      become: true
+      block:
+        - name: debian based tasks
+          when: ansible_os_family == 'Debian'
+          block:
+            - name: update cache
+              apt:
+                update_cache: true
+
+            - name: pkgs
+              shell: "{{ item }}"
+              loop:
+                - apt update -qq
+                - apt install -y -qq software-properties-common uidmap
+                - add-apt-repository -y ppa:projectatomic/ppa
+                - apt update -qq
+
+        - name: pkgs
+          package:
+            name:
+              - rsync
+              - python-docker
+              - podman

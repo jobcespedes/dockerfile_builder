@@ -1,0 +1,49 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    mycontainers:
+      - image: example.com/mycontainer
+        src: "../default/example.com/mycontainer"
+      - image: example.com/mycontainer2
+        src: "../default/example.com/mycontainer2"
+  roles:
+    - name: test with docker
+      vars:
+        dockerfile_builder_image: example.com/mycontainer
+        dockerfile_builder_src: "../default/example.com/mycontainer"
+      role: >-
+        {{ lookup('env','GALAXY_ROLE_NAME') |
+        default( playbook_dir | dirname |
+        dirname | basename, true ) }}
+    - name: test with podman
+      vars:
+        dockerfile_builder: podman
+        dockerfile_builder_image: example.com/mycontainer
+        dockerfile_builder_src: "../default/example.com/mycontainer"
+      role: >-
+        {{ lookup('env','GALAXY_ROLE_NAME') |
+        default( playbook_dir | dirname |
+        dirname | basename, true ) }}
+  tasks:
+    - name: test with multiple builds and docker
+      vars:
+        dockerfile_builder_image: "{{ item.image }}"
+        dockerfile_builder_src: "{{ item.src }}"
+      include_role:
+        name: >-
+          {{ lookup('env','GALAXY_ROLE_NAME') |
+          default( playbook_dir | dirname |
+          dirname | basename, true ) }}
+      loop: "{{ mycontainers }}"
+    - name: test with multiple builds and podman
+      vars:
+        dockerfile_builder: podman
+        dockerfile_builder_image: "{{ item.image }}"
+        dockerfile_builder_src: "{{ item.src }}"
+      include_role:
+        name: >-
+          {{ lookup('env','GALAXY_ROLE_NAME') |
+          default( playbook_dir | dirname |
+          dirname | basename, true ) }}
+      loop: "{{ mycontainers }}"

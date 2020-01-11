@@ -6,3 +6,14 @@
       copy:
         src: example.com
         dest: ./
+
+    - name: requirements
+      block:
+        - name: update cache
+          when: ansible_os_family == 'Debian'
+          apt:
+            update_cache: true
+
+        - name: pkgs
+          package:
+            name: rsync

@@ -21,7 +21,7 @@
         push: "{{ dockerfile_builder_push | default(omit) }}"
         push_args:
           compress: "{{ dockerfile_builder_compress | default(omit) }}"
-          dest: "{{ dockerfile_builder_path | default(omit) }}"
+          dest: "{{ dockerfile_builder_dest | default(omit) }}"
           format: "{{ dockerfile_builder_format | default(omit) }}"
           sign_by: "{{ dockerfile_builder_sign_by | default(omit) }}"
           transport: "{{ dockerfile_builder_transport | default(omit) }}"

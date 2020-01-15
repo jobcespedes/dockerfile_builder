@@ -33,4 +33,10 @@
       set_fact:
         dockerfile_builder_force_source: true
 
-    - include_tasks: docker.yml
+    - name: docker build
+      include_tasks: docker.yml
+      when: dockerfile_builder == 'docker'
+
+    - name: podman build
+      include_tasks: podman.yml
+      when: dockerfile_builder == 'podman'

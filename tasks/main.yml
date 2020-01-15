@@ -11,12 +11,14 @@
         state: directory
 
     - name: create Dockerfile
+      when: dockerfile_builder_template_omit is not defined
       register: dockerfile_builder_create_dockerfile
       template:
         src: "{{ dockerfile_builder_template_src }}"
         dest: "{{ dockerfile_builder_template_dest }}"
 
     - name: sync image build directory
+      when: dockerfile_builder_src_omit is not defined
       register: dockerfile_builder_copy_build
       synchronize:
         src: "{{ dockerfile_builder_src }}/"

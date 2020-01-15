@@ -4,6 +4,7 @@ dockerfile_builder: docker
 
 # Builder template
 dockerfile_builder_template: Dockerfile.j2
+dockerfile_builder_dockerfile: Dockerfile
 
 # Image name (Ex. "repository/name:tag". It is also the path to
 # its context
@@ -23,8 +24,8 @@ dockerfile_builder_template_src: >-
 
 # Dest template for image Dockerfile
 dockerfile_builder_template_dest: >-
-  {{ dockerfile_builder_path + '/'
-  + item.dockerfile_j2 | default('Dockerfile') }}
+    "{{ dockerfile_builder_path +
+    '/' + dockerfile_builder_dockerfile }}"
 
 # debug build
 dockerfile_builder_debug: false

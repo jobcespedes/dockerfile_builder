@@ -2,6 +2,9 @@
 # Builder: docker or podman
 dockerfile_builder: docker
 
+# Builder template
+dockerfile_builder_template: Dockerfile.j2
+
 # Image name (Ex. "repository/name:tag". It is also the path to
 # its context
 dockerfile_builder_image: false
@@ -16,7 +19,7 @@ dockerfile_builder_path:
 # Source template for image Dockerfile
 dockerfile_builder_template_src: >-
   "{{ dockerfile_builder_src +
-  '/' + item.dockerfile_j2 | default('Dockerfile.j2') }}"
+  '/' + dockerfile_builder_template }}"
 
 # Dest template for image Dockerfile
 dockerfile_builder_template_dest: >-

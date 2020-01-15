@@ -8,8 +8,6 @@ driver:
 lint:
   name: yamllint
 platforms:
-  # centos7
-  # ubuntu1804
   - name: instance-centos7
     box: lpf/centos7docker
   - name: instance-ubuntu1804

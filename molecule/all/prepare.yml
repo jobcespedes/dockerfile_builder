@@ -33,3 +33,32 @@
               - rsync
               - python-docker
               - podman
+
+        - name: user namespaces
+          shell: "{{ item }}"
+          loop:
+            - echo "user.max_user_namespaces=2000" >>
+              /etc/sysctl.d/90-user_namespaces.conf
+            - sysctl --load /etc/sysctl.d/90-user_namespaces.conf
+
+        - name: uid gid mappings
+          shell: "{{ item }}"
+          loop:
+            - usermod --add-subuids 10000-11999 vagrant
+            - usermod --add-subgids 10000-11999 vagrant
+
+        - name: registries
+          block:
+            - name: check registry.conf
+              register: no_registries_conf
+              stat:
+                path: /etc/containers/registries.conf
+
+            - name: create registries.conf
+              when: no_registries_conf.stat.exists == false
+              shell: |
+                cat << EOF > /etc/containers/registries.conf
+                [registries.search]
+                registries = ['docker.io', 'registry.fedoraproject.org',
+                'quay.io', 'registry.access.redhat.com', 'registry.centos.org']
+                EOF

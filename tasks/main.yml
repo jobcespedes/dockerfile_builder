@@ -18,13 +18,15 @@
         dest: "{{ dockerfile_builder_template_dest }}"
 
     - name: sync image build directory
-      when: dockerfile_builder_src_omit is not defined
+      when:
+        - dockerfile_builder_src != dockerfile_builder_path
+        - dockerfile_builder_src_omit is not defined
       register: dockerfile_builder_copy_build
       synchronize:
         src: "{{ dockerfile_builder_src }}/"
         dest: "{{ dockerfile_builder_path }}/"
+        delete: true
         rsync_opts:
-          - "--delete"
           - "--exclude=Dockerfile*"
 
     - name: force build

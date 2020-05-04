@@ -35,14 +35,14 @@
               - podman
 
         - name: user namespaces
-          shell: "{{ item }}"
+          command: "{{ item }}"
           loop:
             - echo "user.max_user_namespaces=2000" >>
               /etc/sysctl.d/90-user_namespaces.conf
             - sysctl --load /etc/sysctl.d/90-user_namespaces.conf
 
         - name: uid gid mappings
-          shell: "{{ item }}"
+          command: "{{ item }}"
           loop:
             - usermod --add-subuids 10000-11999 vagrant
             - usermod --add-subgids 10000-11999 vagrant
@@ -55,7 +55,7 @@
                 path: /etc/containers/registries.conf
 
             - name: create registries.conf
-              when: no_registries_conf.stat.exists == false
+              when: not no_registries_conf.stat.exists
               shell: |
                 cat << EOF > /etc/containers/registries.conf
                 [registries.search]

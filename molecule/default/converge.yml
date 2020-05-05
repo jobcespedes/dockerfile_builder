@@ -5,6 +5,13 @@
     mycontainers:
       - image: example.com/mycontainer
       - image: example.com/mycontainer2
+  pre_tasks:
+    - set_fact:
+        ansible_python_interpreter: /usr/bin/python
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_distribution_major_version == "16" or
+          ansible_distribution_major_version == "18"
   roles:
     - name: test with defaults
       vars:

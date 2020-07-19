@@ -22,6 +22,7 @@
           path: "{{ dockerfile_builder_path }}"
           pull: "{{ dockerfile_builder_pull | default(false) }}"
           arg: "{{ dockerfile_builder_args | default(omit) }}"
+          cache_from: "{{ dockerfile_builder_cache_from | default(omit) }}"
           dockerfile:
             "{{ dockerfile_builder_dockerfile | default(omit) }}"
           nocache:

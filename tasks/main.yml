@@ -26,6 +26,8 @@
         src: "{{ dockerfile_builder_src }}/"
         dest: "{{ dockerfile_builder_path }}/"
         delete: true
+        checksum: "{{ dockerfile_builder_sync_checksum | default(omit) }}"
+        times: "{{ false if dockerfile_builder_sync_checksum | default(false) else omit }}"
         rsync_opts:
           - "--exclude=Dockerfile*"
 

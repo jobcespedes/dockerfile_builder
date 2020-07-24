@@ -16,6 +16,7 @@
           "{{ dockerfile_builder_config_path | default(omit) }}"
 
     - name: build image
+      register: dockerfile_builder_image_build
       docker_image:
         name: "{{ dockerfile_builder_image }}"
         build:

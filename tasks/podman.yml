@@ -3,6 +3,7 @@
   when: dockerfile_builder == 'podman'
   block:
     - name: build image
+      register: dockerfile_builder_image_build
       podman_image:
         auth_file: "{{ dockerfile_builder_auth_file | default(omit) }}"
         build:

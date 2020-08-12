@@ -1,6 +1,9 @@
 ---
 # Builder: docker or podman
 dockerfile_builder: docker
+dockerfile_builders:
+  - podman
+  - docker
 
 # Builder template
 dockerfile_builder_template: Dockerfile.j2

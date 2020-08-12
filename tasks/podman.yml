@@ -2,8 +2,14 @@
 - name: build with podman_image
   when: dockerfile_builder == 'podman'
   block:
+    - name: do not log build when password is present
+      when: dockerfile_builder_password is defined
+      set_fact:
+        dockerfile_builder_podman_build_no_log: true
+
     - name: build image
       register: dockerfile_builder_image_build
+      no_log: "{{ dockerfile_builder_podman_build_no_log | default(false) }}"
       podman_image:
         auth_file: "{{ dockerfile_builder_auth_file | default(omit) }}"
         build:

@@ -5,6 +5,7 @@
     - name: Log into registry
       when: dockerfile_builder_password | default(false)
       register: dockerfile_builder_login_state
+      no_log: true
       docker_login:
         username: "{{ dockerfile_builder_username }}"
         password: "{{ dockerfile_builder_password }}"

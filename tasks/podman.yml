@@ -3,7 +3,7 @@
   when: dockerfile_builder == 'podman'
   block:
     - name: do not log build when password is present
-      when: dockerfile_builder_password is defined
+      when: dockerfile_builder_password | default(false,true)
       set_fact:
         dockerfile_builder_podman_build_no_log: true
 
@@ -22,7 +22,7 @@
         executable: "{{ dockerfile_builder_executable | default(omit) }}"
         force: "{{ dockerfile_builder_force | default(omit) }}"
         name: "{{ dockerfile_builder_image }}"
-        password: "{{ dockerfile_builder_password | default(omit) }}"
+        password: "{{ dockerfile_builder_password | default(omit,true) }}"
         path: "{{ dockerfile_builder_path | default(omit) }}"
         pull: "{{ dockerfile_builder_pull | default(omit) }}"
         push: "{{ dockerfile_builder_push | default(omit) }}"
@@ -34,6 +34,6 @@
           transport: "{{ dockerfile_builder_transport | default(omit) }}"
         state: "{{ dockerfile_builder_state | default(omit) }}"
         tag: "{{ dockerfile_builder_tag | default(omit) }}"
-        username: "{{ dockerfile_builder_username | default(omit) }}"
+        username: "{{ dockerfile_builder_username | default(omit,true) }}"
         validate_certs:
           "{{ dockerfile_builder_validate_certs | default(omit) }}"

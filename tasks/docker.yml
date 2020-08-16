@@ -3,7 +3,7 @@
   when: dockerfile_builder == 'docker'
   block:
     - name: Log into registry
-      when: dockerfile_builder_password | default(false)
+      when: dockerfile_builder_password | default(false,true)
       register: dockerfile_builder_login_state
       no_log: true
       docker_login:

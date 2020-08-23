@@ -18,6 +18,8 @@
 
     - name: build image
       register: dockerfile_builder_image_build
+      environment:
+        DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('0') }}"
       docker_image:
         name: "{{ dockerfile_builder_image }}"
         build:

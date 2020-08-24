@@ -31,7 +31,7 @@
             "{{ dockerfile_builder_dockerfile | default(omit) }}"
           nocache:
             "{{ dockerfile_builder_nocache | default(false) }}"
-        source: build
+        source: "{{ dockerfile_builder_source | default('build') }}"
         push: "{{ dockerfile_builder_push | default(omit) }}"
         tag: "{{ dockerfile_builder_tag | default(omit) }}"
         force_source:

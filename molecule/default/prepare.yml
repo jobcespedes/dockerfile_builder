@@ -6,6 +6,7 @@
       copy:
         src: example.com
         dest: ./
+        mode: preserve
 
     - name: requirements
       block:

@@ -9,6 +9,7 @@
       file:
         dest: "{{ dockerfile_builder_path }}"
         state: directory
+        mode: '0755'
 
     - name: create Dockerfile
       when: dockerfile_builder_template_omit is not defined
@@ -16,6 +17,7 @@
       template:
         src: "{{ dockerfile_builder_template_src }}"
         dest: "{{ dockerfile_builder_template_dest }}"
+        mode: "0644"
 
     - name: sync image build directory
       when:

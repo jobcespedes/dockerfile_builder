@@ -45,9 +45,10 @@
 
     - name: force build
       when:
-        dockerfile_builder_check_dir is changed or
-        dockerfile_builder_copy_build is changed or
-        dockerfile_builder_create_dockerfile is changed
+        - dockerfile_builder_force_source_on_changed | default(true)
+        - dockerfile_builder_check_dir is changed or
+          dockerfile_builder_copy_build is changed or
+          dockerfile_builder_create_dockerfile is changed
       set_fact:
         dockerfile_builder_force_source: true
 

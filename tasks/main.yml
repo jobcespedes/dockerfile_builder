@@ -40,7 +40,6 @@
           - "--exclude=Dockerfile*"
 
     - when:
-        - dockerfile_builder_build_omit_if_no_changes | default(false)
         - dockerfile_builder_copy_build is defined
         - dockerfile_builder_copy_build is not changed
       block:
@@ -50,8 +49,7 @@
 
     - name: force build
       when:
-        - dockerfile_builder_force_source_on_changed | default(true)
-        - dockerfile_builder_check_dir.stat.exists or
+        - not dockerfile_builder_check_dir.stat.exists or
           dockerfile_builder_copy_build is changed or
           dockerfile_builder_create_dockerfile is changed
       set_fact:

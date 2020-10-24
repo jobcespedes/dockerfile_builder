@@ -42,6 +42,7 @@
     - when:
         - dockerfile_builder_copy_build is defined
         - dockerfile_builder_copy_build is not changed
+        - dockerfile_builder_build_omit_when_no_sync
       block:
         - name: omit build because there are no changes
           set_fact:

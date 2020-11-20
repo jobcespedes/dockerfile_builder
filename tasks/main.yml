@@ -56,12 +56,6 @@
       set_fact:
         dockerfile_builder_force_source: true
 
-    - when: not dockerfile_builder_build_omit | default(false)
-      block:
-        - name: docker build
-          include_tasks: docker.yml
-          when: dockerfile_builder == 'docker'
-
-        - name: podman build
-          include_tasks: podman.yml
-          when: dockerfile_builder == 'podman'
+    - name: image build
+      when: not dockerfile_builder_build_omit | default(false)
+      include_tasks: "{{ dockerfile_builder }}.yml"

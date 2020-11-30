@@ -24,6 +24,20 @@
         dest: "{{ dockerfile_builder_template_dest }}"
         mode: "0644"
 
+    - name: check README template
+      register: dockerfile_builder_readme_src_status
+      stat:
+        path: "{{ dockerfile_builder_readme_src }}"
+
+    - name: create README
+      when:
+        - dockerfile_builder_readme_omit is not defined
+        - dockerfile_builder_readme_src_status.stat.exists
+      template:
+        src: "{{ dockerfile_builder_readme_src }}"
+        dest: "{{ dockerfile_builder_readme_dest | default (dockerfile_builder_path + 'README.md') }}"
+        mode: "0644"
+
     - name: sync image build directory
       when:
         - dockerfile_builder_src != dockerfile_builder_path
@@ -36,8 +50,7 @@
         checksum: "{{ dockerfile_builder_sync_checksum | default(omit) }}"
         times: "{{ false if dockerfile_builder_sync_checksum |
           default(false) else omit }}"
-        rsync_opts:
-          - "--exclude=Dockerfile*"
+        rsync_opts: "{{ dockerfile_builder_rsync_opts }}"
 
     - when:
         - dockerfile_builder_copy_build is defined

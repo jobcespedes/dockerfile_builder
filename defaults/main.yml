@@ -41,10 +41,6 @@ dockerfile_builder_debug: false
 # dockerfile_builder_username: myusername
 # dockerfile_builder_password: mypassword
 
-# README
-dockerfile_builder_readme_src: "{{ dockerfile_builder_src }}/README.md.j2"
-dockerfile_builder_readme_dest: "{{ dockerfile_builder_path }}/README.md"
-
 # Other
-dockerfile_builder_rsync_opts: "{{ ['--exclude=Dockerfile*'] + ['--exclude=README.md*'] if
-  dockerfile_builder_readme_src_status.stat.exists else ['--exclude=Dockerfile*'] }}"
+dockerfile_builder_template_files: "{{ query('fileglob', dockerfile_builder_src + '/*.j2') }}"
+dockerfile_builder_rsync_opts: "{%- if dockerfile_builder_template_files -%}{%- for template_file in dockerfile_builder_template_files -%}--exclude={{ template_file | basename }},--exclude={{ template_file | basename | regex_replace('.j2$', '') }}{% if not loop.last %},{%- endif -%}{%- endfor -%}{%- endif -%}"

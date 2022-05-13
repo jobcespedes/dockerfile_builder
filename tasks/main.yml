@@ -16,28 +16,6 @@
         state: directory
         mode: '0755'
 
-    - name: create Dockerfile
-      when: dockerfile_builder_template_omit is not defined
-      register: dockerfile_builder_create_dockerfile
-      template:
-        src: "{{ dockerfile_builder_template_src }}"
-        dest: "{{ dockerfile_builder_template_dest }}"
-        mode: "0644"
-
-    - name: check README template
-      register: dockerfile_builder_readme_src_status
-      stat:
-        path: "{{ dockerfile_builder_readme_src }}"
-
-    - name: create README
-      when:
-        - dockerfile_builder_readme_omit is not defined
-        - dockerfile_builder_readme_src_status.stat.exists
-      template:
-        src: "{{ dockerfile_builder_readme_src }}"
-        dest: "{{ dockerfile_builder_readme_dest | default (dockerfile_builder_path + 'README.md') }}"
-        mode: "0644"
-
     - name: sync image build directory
       when:
         - dockerfile_builder_src != dockerfile_builder_path
@@ -50,7 +28,18 @@
         checksum: "{{ dockerfile_builder_sync_checksum | default(omit) }}"
         times: "{{ false if dockerfile_builder_sync_checksum |
           default(false) else omit }}"
-        rsync_opts: "{{ dockerfile_builder_rsync_opts }}"
+        rsync_opts: "{{ dockerfile_builder_rsync_opts.split(',') if dockerfile_builder_rsync_opts else omit }}"
+
+    - name: sync templates in image build directory
+      when:
+        - dockerfile_builder_template_files
+        - dockerfile_builder_template_omit is not defined
+      register: dockerfile_builder_template_sync
+      template:
+        src: "{{ item }}"
+        dest: "{{ dockerfile_builder_path }}/{{ item | basename | regex_replace('.j2$', '') }}"
+        mode: 0644
+      loop: "{{ dockerfile_builder_template_files }}"
 
     - when:
         - dockerfile_builder_copy_build is defined
@@ -65,7 +54,7 @@
       when:
         - not dockerfile_builder_check_dir.stat.exists or
           dockerfile_builder_copy_build is changed or
-          dockerfile_builder_create_dockerfile is changed
+          dockerfile_builder_template_sync is changed
       set_fact:
         dockerfile_builder_force_source: true
 

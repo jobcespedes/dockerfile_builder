@@ -30,6 +30,12 @@ dockerfile_builder_template_dest: >-
     "{{ dockerfile_builder_path +
     '/' + dockerfile_builder_dockerfile }}"
 
+# omit source sync
+dockerfile_builder_src_omit: false
+
+# omit template generation
+dockerfile_builder_template_omit: false
+
 # omit if templates do not change dest
 dockerfile_builder_build_omit_when_no_sync: false
 

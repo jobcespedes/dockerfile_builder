@@ -58,6 +58,7 @@
           (dockerfile_builder_template_sync is defined and dockerfile_builder_template_sync is changed)
       set_fact:
         dockerfile_builder_force_source: true
+        dockerfile_builder_force: true
 
     - name: image build
       when: not dockerfile_builder_build_omit | default(false)

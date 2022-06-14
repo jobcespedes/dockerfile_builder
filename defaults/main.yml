@@ -49,4 +49,9 @@ dockerfile_builder_debug: false
 
 # Other
 dockerfile_builder_template_files: "{{ query('fileglob', dockerfile_builder_src + '/*.j2') }}"
-dockerfile_builder_rsync_opts: "{%- if dockerfile_builder_template_files -%}{%- for template_file in dockerfile_builder_template_files -%}--exclude={{ template_file | basename }},--exclude={{ template_file | basename | regex_replace('.j2$', '') }}{% if not loop.last %},{%- endif -%}{%- endfor -%}{%- endif -%}"
+dockerfile_builder_excluded_files: []
+dockerfile_builder_rsync_excluded_files: "{{ dockerfile_builder_template_files + dockerfile_builder_excluded_files }}"
+dockerfile_builder_rsync_opts: "{%- if dockerfile_builder_rsync_excluded_files -%}
+  {%- for template_file in dockerfile_builder_rsync_excluded_files -%}
+  --exclude={{ template_file | basename }},--exclude={{ template_file | basename | regex_replace('.j2$', '') }}
+  {%- if not loop.last -%},{%- endif -%}{%- endfor -%}{%- endif -%}"

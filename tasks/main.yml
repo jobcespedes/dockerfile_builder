@@ -4,6 +4,11 @@
     - debug:
         msg: "building: {{ dockerfile_builder_image }}"
 
+    - name: check valid builder
+      when: assertion_dockerfile_builder | default(false)
+      assert:
+        that: dockerfile_builder in dockerfile_builders
+
     - name: check image build directory
       stat:
         path: "{{ dockerfile_builder_path }}"
@@ -62,4 +67,4 @@
 
     - name: image build
       when: not dockerfile_builder_build_omit | default(false)
-      include_tasks: "{{ dockerfile_builder }}.yml"
+      include_tasks: "{{ 'docker-buildx' if dockerfile_builder_use_buildx | bool else dockerfile_builder }}.yml"

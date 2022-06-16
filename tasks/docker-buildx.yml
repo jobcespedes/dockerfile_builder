@@ -1,0 +1,77 @@
+---
+- name: build with docker buildx
+  when: dockerfile_builder == 'docker' and dockerfile_builder_use_buildx
+  block:
+    - name: Log into registry
+      when: dockerfile_builder_password | default(false,true)
+      register: dockerfile_builder_login_state
+      no_log: true
+      docker_login:
+        username: "{{ dockerfile_builder_username }}"
+        password: "{{ dockerfile_builder_password }}"
+        email: "{{ dockerfile_builder_email | default(omit) }}"
+        registry: "{{ dockerfile_builder_registry | default(omit) }}"
+        reauthorize:
+          "{{ dockerfile_builder_reauthorize | default(omit) }}"
+        config_path:
+          "{{ dockerfile_builder_config_path | default(omit) }}"
+
+    - name: build image
+      register: dockerfile_builder_image_build
+      environment:
+        DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('0') }}"
+      command: >-
+        docker {{ '-l debug' if dockerfile_builder_debug | default(false) else '' }} buildx build
+        -t {{ dockerfile_builder_image }}
+        {{ '--build-arg="ARG_IMAGE_FROM=' + dockerfile_builder_arg_image_from + '"'
+          if dockerfile_builder_arg_image_from | default(false) else '' }}
+        {{ '--pull' if dockerfile_builder_pull | default(false) or dockerfile_builder_force | default(false) else '' }}
+        {{ '--load' if dockerfile_builder_load | default(false) else '' }}
+        {{ '--push' if dockerfile_builder_push | default(true) else '' }}
+        {{ '--no-cache' if dockerfile_builder_nocache | default(false) or dockerfile_builder_force | default(false) else '' }}
+        {{ '--quiet' if dockerfile_builder_quiet | default(false) else '' }}
+        {{ '--metadata-file="' + dockerfile_builder_metadata_file + '"' if dockerfile_builder_metadata_file | default(false) else '' }}
+        {{ '--progress="' + dockerfile_builder_progress + '"' if dockerfile_builder_progress | default(false) else '' }}
+        {{ '--ssh="' + dockerfile_builder_ssh + '"' if dockerfile_builder_ssh | default(false) else '' }}
+        {% for builder_cache_from in dockerfile_builder_cache_from | default([]) %}
+        {{ '--cache-from="' + builder_cache_from + '"' }}
+        {% endfor %}
+        {% for builder_cache_to in dockerfile_builder_cache_to | default([]) %}
+        {{ '--cache-to="' + builder_cache_to + '"' }}
+        {% endfor %}
+        {% for builder_platform in dockerfile_builder_platforms | default([]) %}
+        {{ '--platform="' + builder_platform + '"' }}
+        {% endfor %}
+        {% for buildx_tag in dockerfile_builder_tags | default([]) %}
+        {{ '--tag="' + dockerfile_builder_image + ':' + buildx_tag + '"' }}
+        {% endfor %}
+        {% for builder_image_tag in dockerfile_builder_image_tags | default([]) %}
+        {{ '--tag="' + builder_image_tag + '"' }}
+        {% endfor %}
+        {% if dockerfile_builder_args is defined %}
+        {% for builder_arg_key, builder_arg_value in dockerfile_builder_args.items() %}
+        {{ '--build-arg="' + builder_arg_key | string + '=' + builder_arg_value | string + '"' }}
+        {% endfor %}
+        {% endif %}
+        {% if dockerfile_builder_labels is defined %}
+        {% for builder_label_key, builder_label_value in dockerfile_builder_labels.items() %}
+        {{ '--label="' + builder_label_key | string + '=' + builder_label_value | string + '"' }}
+        {% endfor %}
+        {% endif %}
+        {% for builder_output in dockerfile_builder_output | default([]) %}
+        {{ '--output="' + builder_output + '"' }}
+        {% endfor %}
+        {{ dockerfile_builder_path | default('.') }}
+
+    - name: image info fact
+      when: not ansible_check_mode
+      set_fact:
+        dockerfile_builder_image_info: "{{ lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image) | from_json }}"
+
+  always:
+    - name: Log out
+      when:
+        dockerfile_builder_login_state is changed
+      docker_login:
+        registry: "{{ dockerfile_builder_registry | default(omit) }}"
+        state: absent

@@ -42,6 +42,10 @@
           "{{ dockerfile_builder_force_absent | default(false) }}"
         debug: "{{ dockerfile_builder_debug | default(omit) }}"
 
+    - name: image info fact
+      when: not ansible_check_mode
+      set_fact:
+        dockerfile_builder_image_info: "{{ dockerfile_builder_image_build.image }}"
   always:
     - name: Log out
       when:

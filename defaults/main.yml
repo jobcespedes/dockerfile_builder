@@ -1,6 +1,7 @@
 ---
 # Builder: docker or podman
 dockerfile_builder: docker
+dockerfile_builder_use_buildx: false
 dockerfile_builders:
   - podman
   - docker

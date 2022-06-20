@@ -19,12 +19,13 @@
     - name: build image
       register: dockerfile_builder_image_build
       environment:
-        DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('0') }}"
+        DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('1') }}"
       command: >-
         docker {{ '-l debug' if dockerfile_builder_debug | default(false) else '' }} buildx build
         -t {{ dockerfile_builder_image }}
         {{ '--build-arg="ARG_IMAGE_FROM=' + dockerfile_builder_arg_image_from + '"'
           if dockerfile_builder_arg_image_from | default(false) else '' }}
+        {{ '--build-arg="BUILDKIT_INLINE_CACHE=1' if dockerfile_builder_arg_inline_cache | default(false) else '' }}
         {{ '--pull' if dockerfile_builder_pull | default(false) or dockerfile_builder_force | default(false) else '' }}
         {{ '--load' if dockerfile_builder_load | default(false) else '' }}
         {{ '--push' if dockerfile_builder_push | default(true) else '' }}

@@ -2,6 +2,7 @@
 # Builder: docker or podman
 dockerfile_builder: docker
 dockerfile_builder_use_buildx: false
+dockerfile_builder_buildx_multiplatform_cache: false
 dockerfile_builders:
   - podman
   - docker

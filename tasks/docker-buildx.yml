@@ -1,6 +1,39 @@
 ---
 - name: build with docker buildx
   when: dockerfile_builder == 'docker' and dockerfile_builder_use_buildx
+  environment:
+    DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('1') }}"
+  vars:
+    dockerfile_builder_buildx_cmd: >-
+      docker {{ '-l debug' if dockerfile_builder_debug | default(false) else '' }} buildx build
+      -t {{ dockerfile_builder_image }}
+      {{ '--build-arg="ARG_IMAGE_FROM=' + dockerfile_builder_arg_image_from + '"'
+        if dockerfile_builder_arg_image_from | default(false) else '' }}
+      {{ '--build-arg="BUILDKIT_INLINE_CACHE=1' if dockerfile_builder_arg_inline_cache | default(false) else '' }}
+      {{ '--pull' if dockerfile_builder_pull | default(false) or dockerfile_builder_force | default(false) else '' }}
+      {{ '--load' if dockerfile_builder_load | default(false) else '' }}
+      {{ '--no-cache' if dockerfile_builder_nocache | default(false) or dockerfile_builder_force | default(false) else '' }}
+      {{ '--quiet' if dockerfile_builder_quiet | default(false) else '' }}
+      {{ '--metadata-file="' + dockerfile_builder_metadata_file + '"' if dockerfile_builder_metadata_file | default(false) else '' }}
+      {{ '--progress="' + dockerfile_builder_progress + '"' if dockerfile_builder_progress | default(false) else '' }}
+      {{ '--ssh="' + dockerfile_builder_ssh + '"' if dockerfile_builder_ssh | default(false) else '' }}
+      {% if dockerfile_builder_args is defined %}
+      {% for builder_arg_key, builder_arg_value in dockerfile_builder_args.items() %}
+      {{ '--build-arg="' + builder_arg_key | string + '=' + builder_arg_value | string + '"' }}
+      {% endfor %}
+      {% endif %}
+      {% if dockerfile_builder_labels is defined %}
+      {% for builder_label_key, builder_label_value in dockerfile_builder_labels.items() %}
+      {{ '--label="' + builder_label_key | string + '=' + builder_label_value | string + '"' }}
+      {% endfor %}
+      {% endif %}
+      {% for builder_output in dockerfile_builder_output | default([]) %}
+      {{ '--output="' + builder_output + '"' }}
+      {% endfor %}
+      {% if dockerfile_builder_buildx_cmd_extra_args is defined and dockerfile_builder_buildx_cmd_extra_args %}
+      {{ dockerfile_builder_buildx_cmd_extra_args }}
+      {% endif %}
+      {{ dockerfile_builder_path | default('.') }}
   block:
     - name: Log into registry
       when: dockerfile_builder_password | default(false,true)
@@ -19,74 +52,57 @@
     - name: build
       when: not ansible_check_mode
       block:
-        - name: set image digest fact if any, prior build
+        - name: store image info, if any, prior build
           set_fact:
-            dockerfile_builder_buildx_image_digest: "{{ (lookup('pipe',
-              'docker buildx imagetools inspect --format \"{% raw %}{{ json .Manifest.Digest }}{% endraw %}\" '
-              + dockerfile_builder_image) | from_json) | default('', true) }}"
+            dockerfile_builder_image_info: "{{ (lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image) | from_json) | default({}, true) }}"
 
         - name: build image
           register: dockerfile_builder_image_build
           vars:
-            buildx_image_digest: "{{ (lookup('pipe',
-              'docker buildx imagetools inspect --format \"{% raw %}{{ json .Manifest.Digest }}{% endraw %}\" '
-              + dockerfile_builder_image) | from_json) | default('', true) }}"
-          environment:
-            DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('1') }}"
-          changed_when: buildx_image_digest != dockerfile_builder_buildx_image_digest
-          command: >-
-            docker {{ '-l debug' if dockerfile_builder_debug | default(false) else '' }} buildx build
-            -t {{ dockerfile_builder_image }}
-            {{ '--build-arg="ARG_IMAGE_FROM=' + dockerfile_builder_arg_image_from + '"'
-              if dockerfile_builder_arg_image_from | default(false) else '' }}
-            {{ '--build-arg="BUILDKIT_INLINE_CACHE=1' if dockerfile_builder_arg_inline_cache | default(false) else '' }}
-            {{ '--pull' if dockerfile_builder_pull | default(false) or dockerfile_builder_force | default(false) else '' }}
-            {{ '--load' if dockerfile_builder_load | default(false) else '' }}
-            {{ '--push' if dockerfile_builder_push | default(true) else '' }}
-            {{ '--no-cache' if dockerfile_builder_nocache | default(false) or dockerfile_builder_force | default(false) else '' }}
-            {{ '--quiet' if dockerfile_builder_quiet | default(false) else '' }}
-            {{ '--metadata-file="' + dockerfile_builder_metadata_file + '"' if dockerfile_builder_metadata_file | default(false) else '' }}
-            {{ '--progress="' + dockerfile_builder_progress + '"' if dockerfile_builder_progress | default(false) else '' }}
-            {{ '--ssh="' + dockerfile_builder_ssh + '"' if dockerfile_builder_ssh | default(false) else '' }}
-            {% for builder_cache_from in dockerfile_builder_cache_from | default([]) %}
-            {{ '--cache-from="' + builder_cache_from + '"' }}
-            {% endfor %}
-            {% for builder_cache_to in dockerfile_builder_cache_to | default([]) %}
-            {{ '--cache-to="' + builder_cache_to + '"' }}
-            {% endfor %}
-            {% for builder_platform in dockerfile_builder_platforms | default([]) %}
-            {{ '--platform="' + builder_platform + '"' }}
-            {% endfor %}
-            {% for buildx_tag in dockerfile_builder_tags | default([]) %}
-            {{ '--tag="' + dockerfile_builder_image + ':' + buildx_tag + '"' }}
-            {% endfor %}
-            {% for builder_image_tag in dockerfile_builder_image_tags | default([]) %}
-            {{ '--tag="' + builder_image_tag + '"' }}
-            {% endfor %}
-            {% if dockerfile_builder_args is defined %}
-            {% for builder_arg_key, builder_arg_value in dockerfile_builder_args.items() %}
-            {{ '--build-arg="' + builder_arg_key | string + '=' + builder_arg_value | string + '"' }}
-            {% endfor %}
-            {% endif %}
-            {% if dockerfile_builder_labels is defined %}
-            {% for builder_label_key, builder_label_value in dockerfile_builder_labels.items() %}
-            {{ '--label="' + builder_label_key | string + '=' + builder_label_value | string + '"' }}
-            {% endfor %}
-            {% endif %}
-            {% for builder_output in dockerfile_builder_output | default([]) %}
-            {{ '--output="' + builder_output + '"' }}
-            {% endfor %}
-            {{ dockerfile_builder_path | default('.') }}
+            dockerfile_builder_buildx_cmd_extra_args: >-
+              {{ '--push' if dockerfile_builder_push | default(true) else '' }}
+              {% for buildx_tag in dockerfile_builder_tags | default([]) %}
+              {{ '--tag="' + dockerfile_builder_image + ':' + buildx_tag + '"' }}
+              {% endfor %}
+              {% for builder_platform in dockerfile_builder_platforms | default([]) %}
+              {{ '--platform="' + builder_platform + '"' }}
+              {% if dockerfile_builder_buildx_multiplatform_cache %}
+              {{ '--cache-from="' + dockerfile_builder_image + ':build-cache' + '-' +
+                builder_platform | replace('/','-') + '"' }}
+              {% endif %}
+              {% endfor %}
+              --cache-from="{{ dockerfile_builder_image }}"
+              {% if not dockerfile_builder_buildx_multiplatform_cache %}
+              {% for builder_cache_from in dockerfile_builder_cache_from | default([]) %}
+              {{ '--cache-from="' + builder_cache_from + '"' }}
+              {% endfor %}
+              {% for builder_cache_to in dockerfile_builder_cache_to | default([]) %}
+              {{ '--cache-to="' + builder_cache_to + '"' }}
+              {% endfor %}
+              {% endif %}
+            buildx_cache_image_name: "{{ dockerfile_builder_image + ':build-cache' }}"
+            buildx_image_manifests: "{{ (lookup('pipe',
+              'docker buildx imagetools inspect --format \"{% raw %}{{ json .Manifest.Manifests }}{% endraw %}\" '
+              + dockerfile_builder_image) | from_json) | default([], true) }}"
+          changed_when: dockerfile_builder_image_info.manifest.manifests | default([]) |
+            symmetric_difference(buildx_image_manifests)
+          command: "{{ dockerfile_builder_buildx_cmd }}"
+
+        - name: push cache of each architecture separately (workaround https://github.com/docker/buildx/issues/1044)
+          when: dockerfile_builder_buildx_multiplatform_cache
+          loop: "{{ dockerfile_builder_platforms }}"
+          vars:
+            dockerfile_builder_buildx_cmd_extra_args: >-
+              --cache-from="{{ buildx_cache_image_name }}"
+              --cache-to="type=registry,mode=max,ref={{ buildx_cache_image_name }}"
+              --platform="{{ item }}"
+            buildx_cache_image_name: "{{ dockerfile_builder_image + ':build-cache' + '-' + item | replace('/','-') }}"
+          changed_when: false
+          command: "{{ dockerfile_builder_buildx_cmd }}"
 
         - name: image info fact
           set_fact:
-            dockerfile_builder_image_info: "{{ lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image) | from_json }}"
-
-        - name: set image digest fact if any, post build
-          when: dockerfile_builder_image_build is changed
-          set_fact:
-            dockerfile_builder_buildx_image_digest: "{{ dockerfile_builder_image_info.manifest.digest }}"
-
+            dockerfile_builder_image_info: "{{ (lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image) | from_json) }}"
 
   always:
     - name: Log out

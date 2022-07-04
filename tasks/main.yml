@@ -43,8 +43,8 @@
           register: dockerfile_builder_template_sync
           template:
             src: "{{ item }}"
-            dest: "{{ dockerfile_builder_path }}/{{ item | basename | regex_replace('.j2$', '') }}"
-            mode: 0644
+            dest: "{{ item | regex_replace('^' + dockerfile_builder_src , dockerfile_builder_path) | splitext | first }}"
+            mode: "{{ lookup('pipe', 'stat -c \"%a\" ' + item ) }}"
           loop: "{{ dockerfile_builder_template_files }}"
 
     - when:

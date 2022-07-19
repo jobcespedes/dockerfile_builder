@@ -14,6 +14,7 @@ dockerfile_builder_dockerfile: Dockerfile
 # Image name (Ex. "repository/name:tag". It is also the path to
 # its context
 dockerfile_builder_image: false
+dockerfile_builder_image_base: "{{ dockerfile_builder_image.split('@')[0].split(':')[0] }}"
 
 # Image source
 dockerfile_builder_src: "{{ dockerfile_builder_image }}"
@@ -48,6 +49,17 @@ dockerfile_builder_debug: false
 # dockerfile_builder_push: true
 # dockerfile_builder_username: myusername
 # dockerfile_builder_password: mypassword
+
+# buildx
+dockerfile_builder_buildx_cache_from_arg: "{{ dockerfile_builder_buildx_cache_image_name }}"
+dockerfile_builder_buildx_cache_to_mode: inline
+dockerfile_builder_buildx_cache_to_mode_args:
+  inline: "type=inline"
+  min: "type=registry,mode=min,ref={{ dockerfile_builder_buildx_cache_image_name }}"
+  max: "type=registry,mode=max,ref={{ dockerfile_builder_buildx_cache_image_name }}"
+dockerfile_builder_buildx_cache_to_arg:
+  "{{ dockerfile_builder_buildx_cache_to_mode_args[dockerfile_builder_buildx_cache_to_mode] }}"
+dockerfile_builder_buildx_cache_image_name: "{{ dockerfile_builder_image + ':build-cache' }}"
 
 # Other
 dockerfile_builder_template_files: "{{ (lookup('pipe', 'find ' + dockerfile_builder_src + ' -type f -name \"*.j2\"') | default('')).split('\n') }}"

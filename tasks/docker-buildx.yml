@@ -57,6 +57,7 @@
             dockerfile_builder_image_info: "{{ (lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image | string + ' || echo {}') | from_json) | default({}, true) }}"
 
         - name: build image
+          throttle: "{{ dockerfile_builder_throttle | default(omit) }}"
           register: dockerfile_builder_image_build
           vars:
             dockerfile_builder_buildx_cmd_extra_args: >-
@@ -88,6 +89,7 @@
           command: "{{ dockerfile_builder_buildx_cmd }}"
 
         - name: build each architecture separately (workaround https://github.com/docker/buildx/issues/1044)
+          throttle: "{{ dockerfile_builder_throttle | default(omit) }}"
           when: dockerfile_builder_buildx_multiplatform_cache
           loop: "{{ dockerfile_builder_platforms }}"
           vars:

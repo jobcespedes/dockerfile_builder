@@ -9,6 +9,7 @@
 
     - name: build image
       register: dockerfile_builder_image_build
+      throttle: "{{ dockerfile_builder_throttle | default(omit) }}"
       no_log: "{{ dockerfile_builder_podman_build_no_log | default(false) }}"
       podman_image:
         auth_file: "{{ dockerfile_builder_auth_file | default(omit) }}"

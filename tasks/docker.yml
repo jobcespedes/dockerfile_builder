@@ -18,6 +18,7 @@
 
     - name: build image
       register: dockerfile_builder_image_build
+      throttle: "{{ dockerfile_builder_throttle | default(omit) }}"
       environment:
         DOCKER_BUILDKIT: "{{ dockerfile_builder_buildkit | default('0') }}"
       docker_image:

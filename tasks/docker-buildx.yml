@@ -68,7 +68,8 @@
               {% for builder_platform in dockerfile_builder_platforms | default([]) %}
               {{ '--platform="' + builder_platform + '"' }}
               {% if dockerfile_builder_buildx_multiplatform_cache %}
-              {{ '--cache-from="' + dockerfile_builder_image_base + ':build-cache' + '-' +
+              {{ '--cache-from="' + dockerfile_builder_image_base + ':' +
+                dockerfile_builder_buildx_cache_image_extra_tag + '-' +
                 builder_platform | replace('/','-') + '"' }}
               {% endif %}
               {% endfor %}
@@ -93,8 +94,8 @@
           when: dockerfile_builder_buildx_multiplatform_cache
           loop: "{{ dockerfile_builder_platforms }}"
           vars:
-            dockerfile_builder_buildx_cache_image_name: "{{ dockerfile_builder_image_base + ':build-cache' +
-              '-' + item | replace('/','-') }}"
+            dockerfile_builder_buildx_cache_image_name: "{{ dockerfile_builder_image_base + ':' +
+              dockerfile_builder_buildx_cache_image_extra_tag + '-' + item | replace('/','-') }}"
             dockerfile_builder_buildx_cmd_extra_args: >-
               --cache-from="{{ dockerfile_builder_buildx_cache_from_arg }}"
               --cache-to="{{ dockerfile_builder_buildx_cache_to_arg }}"

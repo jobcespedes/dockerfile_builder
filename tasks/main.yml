@@ -1,8 +1,17 @@
 ---
 - when: dockerfile_builder_image is defined and dockerfile_builder_image
   block:
-    - debug:
-        msg: "building: {{ dockerfile_builder_image }}"
+    - name: container image name
+      debug:
+        msg: "{{ dockerfile_builder_image }}"
+
+    - name: container image tags
+      vars:
+        debug_container_images_tags: "{{ dockerfile_builder_tags | default([dockerfile_builder_tag
+          | default('')]) | default([]) }}"
+      when: debug_container_images_tags | length > 0
+      debug:
+        msg: "{{ debug_container_images_tags }}"
 
     - name: check valid builder
       when: assertion_dockerfile_builder | default(false)

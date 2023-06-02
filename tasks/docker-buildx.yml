@@ -7,6 +7,7 @@
     dockerfile_builder_buildx_cmd: >-
       docker {{ '-l debug' if dockerfile_builder_debug | default(false) else '' }} buildx build
       --tag={{ dockerfile_builder_image }}
+      {{ '--progress=' + dockerfile_builder_buildx_progress }}
       {{ '--build-arg="ARG_IMAGE_FROM=' + dockerfile_builder_arg_image_from + '"'
       if dockerfile_builder_arg_image_from | default(false) else '' }}
       {{ '--build-arg="BUILDKIT_INLINE_CACHE=1' if dockerfile_builder_arg_inline_cache | default(false) else '' }}

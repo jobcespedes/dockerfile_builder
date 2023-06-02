@@ -51,6 +51,7 @@ dockerfile_builder_debug: false
 # dockerfile_builder_password: mypassword
 
 # buildx
+dockerfile_builder_buildx_progress: plain
 dockerfile_builder_buildx_cache_from_arg: "{{ dockerfile_builder_buildx_cache_image_name }}"
 dockerfile_builder_buildx_cache_to_mode: inline
 dockerfile_builder_buildx_cache_to_mode_args:

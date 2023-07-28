@@ -54,10 +54,17 @@
       when: not ansible_check_mode
       throttle: "{{ dockerfile_builder_throttle | default(omit) }}"
       block:
-        - name: store image info, if any, prior build
+        - name: get image info, if any, prior build
           throttle: 1
+          register: docker_buildx_inspect_cmd
+          ignore_errors: true
+          command: >-
+            docker buildx imagetools inspect --format
+            "{% raw %}{{ json . }}{% endraw %}" {{ dockerfile_builder_image | string }}
+
+        - name: set image info fact
           set_fact:
-            dockerfile_builder_image_info: "{{ (lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image | string + ' || echo {}') | from_json) | default({}, true) }}"
+            dockerfile_builder_image_info: "{{ docker_buildx_inspect_cmd.stdout | default('{}',true) | from_json }}"
 
         - name: build image
           register: dockerfile_builder_image_build
@@ -104,10 +111,17 @@
           changed_when: false
           command: "{{ dockerfile_builder_buildx_cmd }}"
 
-        - name: image info fact
+        - name: get image info
           throttle: 1
+          register: docker_buildx_inspect_cmd
+          ignore_errors: true
+          command: >-
+            docker buildx imagetools inspect --format
+            "{% raw %}{{ json . }}{% endraw %}" {{ dockerfile_builder_image | string }}
+
+        - name: set image info fact
           set_fact:
-            dockerfile_builder_image_info: "{{ (lookup('pipe', 'docker buildx imagetools inspect --format \"{% raw %}{{ json . }}{% endraw %}\" ' + dockerfile_builder_image) | from_json) }}"
+            dockerfile_builder_image_info: "{{ docker_buildx_inspect_cmd.stdout | default('{}',true) | from_json }}"
 
   always:
     - name: Log out

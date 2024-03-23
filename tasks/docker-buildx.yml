@@ -91,12 +91,13 @@
               {{ '--cache-to="' + builder_cache_to + '"' }}
               {% endfor %}
               {% endif %}
-            buildx_image_manifests: "{{ (lookup('pipe',
-              'docker buildx imagetools inspect --format \"{% raw %}{{ json .Manifest.Manifests }}{% endraw %}\" '
-              + dockerfile_builder_image + ' || echo {}') | from_json) | default([], true) }}"
-          changed_when: dockerfile_builder_image_info.manifest.manifests | default([]) |
-            symmetric_difference(buildx_image_manifests)
-          command: "{{ dockerfile_builder_buildx_cmd }}"
+            json_query_filter_out_manifest_list: '[?annotations."vnd.docker.reference.digest"==null]'
+            dockerfile_builder_image_info_manifest: "{{ dockerfile_builder_image_info.manifest.manifests | default([]) | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
+            dockerfile_builder_image_build_manifest: "{{ dockerfile_builder_image_build.stdout | default('{}', true) | from_json | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
+          changed_when: dockerfile_builder_image_info_manifest | symmetric_difference(dockerfile_builder_image_build_manifest)
+          shell: |-
+            {{ dockerfile_builder_buildx_cmd }} >/dev/null
+            docker buildx imagetools inspect --format {% raw %}"{{ json .Manifest.Manifests }}"{% endraw %} {{ dockerfile_builder_image }}
 
         - name: build each architecture separately (workaround https://github.com/docker/buildx/issues/1044)
           when: dockerfile_builder_buildx_multiplatform_cache

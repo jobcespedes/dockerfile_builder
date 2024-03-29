@@ -20,7 +20,7 @@
                 update_cache: true
 
             - name: pkgs
-              shell: "{{ item }}"
+              command: "{{ item }}"
               loop:
                 - apt update -qq
                 - apt install -y -qq software-properties-common uidmap
@@ -57,6 +57,7 @@
             - name: create registries.conf
               when: not no_registries_conf.stat.exists
               shell: |
+                set -eu
                 cat << EOF > /etc/containers/registries.conf
                 [registries.search]
                 registries = ['docker.io', 'registry.fedoraproject.org',

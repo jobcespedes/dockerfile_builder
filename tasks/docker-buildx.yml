@@ -92,8 +92,8 @@
               {% endfor %}
               {% endif %}
             json_query_filter_out_manifest_list: '[?annotations."vnd.docker.reference.digest"==null]'
-            dockerfile_builder_image_info_manifest: "{{ dockerfile_builder_image_info.manifest.manifests | default([]) | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
-            dockerfile_builder_image_build_manifest: "{{ dockerfile_builder_image_build.stdout | default('{}', true) | from_json | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
+            dockerfile_builder_image_info_manifest: "{{ dockerfile_builder_image_info.manifest.manifests | default([], true) | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
+            dockerfile_builder_image_build_manifest: "{{ dockerfile_builder_image_build.stdout | default('[]', true) | from_json | json_query(json_query_filter_out_manifest_list) | sort(attribute='digest') }}"
           changed_when: dockerfile_builder_image_info_manifest | symmetric_difference(dockerfile_builder_image_build_manifest)
           shell: |-
             set -eu
